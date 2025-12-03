@@ -113,23 +113,23 @@ var scroll = (() => {
         html.scrollTop ? (html.scrollTop = 0, html) : $('body')
       ))()
 
-      if (!update && location.hash && document.getElementById(location.hash.slice(1))) {
-        get(container, 'md-', document.getElementById(location.hash.slice(1)).offsetTop)
-      }
-      else {
-        get(container, 'md-')
-      }
+		if (!update && location.hash && document.getElementById(location.hash.slice(1))) {
+			get(container, 'md-', document.getElementById(location.hash.slice(1)).offsetTop)
+		}
+		else {
+			get(container, 'md-')
+		}
 
-      if (state.content.toc) {
-        setTimeout(() => get($('#_toc'), 'md-toc-'), 10)
-      }
+		if (state.content.toc) {
+			setTimeout(() => get($('#_toc'), 'md-toc-'), 10)
+		}
 
       if (!listening) {
         listening = true
-        set(container, 'md-')
-        if (state.content.toc) {
-          setTimeout(() => set($('#_toc'), 'md-toc-'), 10)
-        }
+		set(container, 'md-')
+		if (state.content.toc) {
+		  setTimeout(() => set($('#_toc'), 'md-toc-'), 10)
+		}
       }
 
       if ($('#_html')) $('#_html').style.visibility = 'visible'

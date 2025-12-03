@@ -113,29 +113,66 @@ var update = (update) => {
 }
 
 var render = (md) => {
-  state.markdown = md
-  chrome.runtime.sendMessage({
-    message: 'markdown',
-    compiler: state.compiler,
-    markdown: frontmatter(state.markdown)
-  }, (res) => {
-    state.html = res.html
-    if (state.content.emoji) {
-      state.html = emojinator(state.html)
-    }
-    if (state.content.mermaid) {
-      state.html = state.html.replace(
-        /<code class="language-(?:mermaid|mmd)">/gi,
-        '<code class="mermaid">'
-      )
-    }
-    if (state.content.toc) {
-      state.toc = toc.render(state.html)
-    }
-    state.html = anchors(state.html)
-    m.redraw()
-  })
+	state.markdown = md
+	chrome.runtime.sendMessage({
+		message: 'markdown',
+		compiler: state.compiler,
+		markdown: frontmatter(state.markdown)
+	}, (res) => {
+		state.html = res.html
+		if (state.content.emoji) {
+			state.html = emojinator(state.html)
+		}
+		if (state.content.mermaid) {
+			state.html = state.html.replace(
+				/<code class="language-(?:mermaid|mmd)">/gi,
+				'<code class="mermaid">'
+			)
+		}
+		if (state.content.toc) {
+			state.toc = toc.render(state.html)
+		}
+		state.html = anchors(state.html)
+		m.redraw()
+		
+
+		let docMainNew = getPresentDoc();
+		let docInfo = docDiff(docMainOld, docMainNew);
+		if (docInfo) setTimeout(() => { scrollTo({ top: docInfo, left: 0, behavior: "smooth", }); }, 50);
+		docMainOld = htmlToDocumentFragment(state.html).children;
+	})
 }
+
+var docMainOld = false;
+
+function  getPresentDoc() {
+	let doc = document.getElementById("_html");
+	if (doc === null) {
+		return false;
+	}
+	return doc.children;
+}
+function docDiff(docOldd, docNew) {
+	if (!docOldd || !docNew) return false;
+	let docLength = docOldd.length > docNew.length ? docOldd.length : docNew.length;
+	for (let i = 0; i < docLength; i++) {
+		if (docNew[i] === undefined || docOldd[i] === undefined) {
+			return docNew[i - 1].offsetTop;
+		}
+		if (docOldd[i].outerHTML != docNew[i].outerHTML) {
+	//aaaaaaaaaaaaaaaaa		
+			return docNew[i].offsetTop;
+		}
+	}
+	return false;
+}
+function htmlToDocumentFragment(htmlString) {
+  const range = document.createRange();
+  range.selectNode(document.body);
+  return range.createContextualFragment(htmlString);
+}
+
+
 
 function mount () {
   $('pre').style.display = 'none'
