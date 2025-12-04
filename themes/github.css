@@ -42,7 +42,7 @@
 	text-decoration: none;
 }
 /*添加的连接图标*/
-.markdown-body a:not(.anchor, .footnote-backref, #fnref1)::after{
+.markdown-body a:not(.anchor, .footnote-backref, #fnref1, .table-of-contents a)::after{
 	content: '';
 	background-image: url("../content/a.svg");
 	display: inline-block;
@@ -630,7 +630,9 @@
     box-sizing: border-box;
 }
 .markdown-body pre[class*="language-"] {
-	margin-top: 42px;
+	margin-top: 52px;
+	padding-top: 32px;
+	font-size: .91em;
 }
 .markdown-body pre[class*="language-"]::before {
 	content: attr(data-language);
@@ -653,13 +655,13 @@
 	height: 35px;
 	width: var(--LanguageWidth);
 	left: var(--LanguageLeft);
+	margin-top: -52px;
 
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 
 	position: absolute;
-	margin-top: -42px;
 }
 .markdown-body pre code,
 .markdown-body pre tt {

@@ -21,6 +21,8 @@ md.compilers['markdown-it'] = (() => {
     sub: false,
     sup: false,
     tasklists: false,
+	mtoc: true,
+	githubAlerts:true
   }
 
   var description = {
@@ -40,6 +42,8 @@ md.compilers['markdown-it'] = (() => {
     sub: 'Subscript <sub>\n~text~',
     sup: 'Superscript <sup>\n^text^',
     tasklists: 'Task lists\n- [x]\n- [ ]',
+	mtoc: 'Add a table of contents to the document\n [[toc]]',
+	githubAlerts: 'github Alerts'
   }
 
   var ctor = ({storage: {state}}) => ({
@@ -60,6 +64,8 @@ md.compilers['markdown-it'] = (() => {
         .use(state['markdown-it'].sub ? mdit.sub : () => {})
         .use(state['markdown-it'].sup ? mdit.sup : () => {})
         .use(state['markdown-it'].tasklists ? mdit.tasklists : () => {})
+	    .use(mdit.mtoc, {markerPattern: /^\[toc\]\(d*\)/im, includeLevel: [1, 2, 3, 4, 5]})
+	    .use(mdit.githubAlerts)
         .render(markdown)
   })
 

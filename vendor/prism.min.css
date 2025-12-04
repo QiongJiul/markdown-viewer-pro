@@ -3,7 +3,6 @@ pre[class*="language-"] {
 	color: #000;
 	text-shadow: 0 1px #fff;
 	font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
-	font-size: .97em;
 	text-align: left;
 	white-space: pre;
 	word-spacing: normal;

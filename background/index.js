@@ -14,6 +14,8 @@ importScripts('/background/messages.js')
 importScripts('/background/mathjax.js')
 importScripts('/background/xhr.js')
 importScripts('/background/icon.js')
+importScripts('/vendor/markdown-it-table-of-contents.js')
+importScripts('/vendor/markdown-it-github-alerts.js')
 
 ;(() => {
   var storage = md.storage(md)
