@@ -138,7 +138,13 @@ var render = (md) => {
 
 		let docMainNew = getPresentDoc();
 		let docInfo = docDiff(docMainOld, docMainNew);
-		if (docInfo) setTimeout(() => { scrollTo({ top: docInfo, left: 0, behavior: "smooth", }); }, 50);
+		setTimeout(() => {
+			let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
+			for (let i = 0; i < pre.length; i++)
+				pre[i].setAttribute('data-language', pre[i].className.split('-')[1]);
+			if (docInfo)
+				scrollTo({ top: docInfo, left: 0, behavior: "smooth" });
+		}, 50);
 		docMainOld = htmlToDocumentFragment(state.html).children;
 	})
 }
@@ -160,7 +166,6 @@ function docDiff(docOldd, docNew) {
 			return docNew[i - 1].offsetTop;
 		}
 		if (docOldd[i].outerHTML != docNew[i].outerHTML) {
-	//aaaaaaaaaaaaaaaaa		
 			return docNew[i].offsetTop;
 		}
 	}

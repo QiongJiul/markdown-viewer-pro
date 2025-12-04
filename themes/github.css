@@ -623,12 +623,42 @@
 	color: #1f2328;
 	background-color: #f6f8fa;
 	border-radius: 6px;
-	margin-top: 40px;
+
+    border-color: #d2d2d29c;
+    border-style: solid;
+    border-width: 1px;
+    box-sizing: border-box;
+}
+.markdown-body pre[class*="language-"] {
+	margin-top: 42px;
 }
 .markdown-body pre[class*="language-"]::before {
-	content: attr(class);
-	display: inline-block;
-	position: relative;
+	content: attr(data-language);
+	display: flex;
+	align-items: center;
+	justify-content: left;
+	font-size: .9em;
+	padding-right: 15px;
+	padding-left: 15px;
+
+	border-top-right-radius: 6px;
+	border-top-left-radius: 6px;
+    border-color: #d2d2d29c;
+    border-style: solid solid none solid;
+    border-width: 1px;
+    box-sizing: border-box;
+	
+
+	background-color: #f0f0f0;
+
+	height: 35px;
+	width: calc(100% - 40px);
+
+	position: absolute;
+	margin-top: -42px;
+	/* transform: translateX(20%); */
+	right: 20px;
+	z-index: 0;
 }
 .markdown-body pre code,
 .markdown-body pre tt {
