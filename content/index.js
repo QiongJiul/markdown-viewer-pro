@@ -139,9 +139,7 @@ var render = (md) => {
 		let docMainNew = getPresentDoc();
 		let docInfo = docDiff(docMainOld, docMainNew);
 		setTimeout(() => {
-			let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
-			for (let i = 0; i < pre.length; i++)
-				pre[i].setAttribute('data-language', pre[i].className.split('-')[1]);
+			preCodeType();
 			if (docInfo)
 				scrollTo({ top: docInfo, left: 0, behavior: "smooth" });
 		}, 50);
@@ -150,7 +148,18 @@ var render = (md) => {
 }
 
 var docMainOld = false;
+window.addEventListener('resize', () => preCodeType(false));
 
+function preCodeType(bool = true) {
+	let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
+	for (let i = 0; i < pre.length; i++) {
+		const element = pre[i];
+		if (bool)  pre[i].setAttribute('data-language', element.className.split('-')[1]);
+		pre[i].style.setProperty('--LanguageWidth', element.offsetWidth + 'px');
+		pre[i].style.setProperty('--LanguageLeft', element.offsetLeft + 'px');
+
+	}
+}
 function  getPresentDoc() {
 	let doc = document.getElementById("_html");
 	if (doc === null) {
