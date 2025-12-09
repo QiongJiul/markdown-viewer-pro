@@ -37,9 +37,9 @@ pre[class*="language-"]::selection {
 		text-shadow: none;
 	}
 }
-pre[class*="language-"] {
-	overflow: auto;
-}
+/* pre[class*="language-"] { */
+/*     overflow: auto; */
+/* } */
 :not(pre) > code[class*="language-"],
 pre[class*="language-"] {
 }
