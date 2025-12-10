@@ -45,7 +45,7 @@ html {
 	text-decoration: none;
 }
 /*添加的连接图标*/
-.markdown-body a:not(.anchor, .footnote-backref, #fnref1, .table-of-contents a)::after{
+.markdown-body a:not(.anchor, .footnote-backref, .footnote-ref a, .table-of-contents a)::after{
 	content: '';
 	background-image: url("../content/a.svg");
 	display: inline-block;
@@ -633,11 +633,12 @@ html {
     box-sizing: border-box;
 }
 .markdown-body pre[class*="language-"] {
-	margin-top: 52px;
-	padding-top: 32px;
+	/* margin-top: 52px; */
+	padding-top: 51px;
 	font-size: .91em;
+	position: relative;
 }
-.markdown-body pre[class*="language-"]::before {
+.markdown-body pre code[class*="language-"]::before {
 	content: attr(data-language);
 	display: block;
 	line-height: 35px;
@@ -645,20 +646,21 @@ html {
 	padding-right: 15px;
 	padding-left: 15px;
 
-	border-top-right-radius: 6px;
-	border-top-left-radius: 6px;
-    border-color: #d2d2d29c;
-    border-style: solid solid none solid;
-    border-width: 1px;
+	/* border-top-right-radius: 6px; */
+	/* border-top-left-radius: 6px; */
+    /* border-color: #d2d2d29c; */
+    /* border-style: solid solid none solid; */
     box-sizing: border-box;
+    border-width: 0px;
 	
 
 	background-color: #f0f0f0;
 
 	height: 35px;
-	width: var(--LanguageWidth);
-	left: var(--LanguageLeft);
-	margin-top: -52px;
+	width: 100%;
+	left: 0;
+	top: 0;
+	/* margin-top: -52px; */
 
 	overflow: hidden;
 	white-space: nowrap;

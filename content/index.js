@@ -136,6 +136,7 @@ var render = (md) => {
 		m.redraw()
 		
 
+		preCodeType();
 		let docMainNew = getPresentDoc();
 		let docInfo = docDiff(docMainOld, docMainNew);
 		setTimeout(() => {
@@ -148,16 +149,11 @@ var render = (md) => {
 }
 
 var docMainOld = false;
-window.addEventListener('resize', () => preCodeType(false));
 
-function preCodeType(bool = true) {
+function preCodeType() {
 	let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
 	for (let i = 0; i < pre.length; i++) {
-		const element = pre[i];
-		if (bool)  pre[i].setAttribute('data-language', element.className.split('-')[1]);
-		pre[i].style.setProperty('--LanguageWidth', element.offsetWidth + 'px');
-		pre[i].style.setProperty('--LanguageLeft', element.offsetLeft + 'px');
-
+		pre[i].children[0].setAttribute('data-language', pre[i].className.split('-')[1]);
 	}
 }
 function  getPresentDoc() {
