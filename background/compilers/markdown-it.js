@@ -64,7 +64,7 @@ md.compilers['markdown-it'] = (() => {
         .use(state['markdown-it'].sub ? mdit.sub : () => {})
         .use(state['markdown-it'].sup ? mdit.sup : () => {})
         .use(state['markdown-it'].tasklists ? mdit.tasklists : () => {})
-	    .use(mdit.mtoc, {markerPattern: /^\[toc\]\(d*\)/im, includeLevel: [1, 2, 3, 4, 5]})
+	    .use(mdit.mtoc, {markerPattern: /^\[toc\]/im, includeLevel: [1, 2, 3, 4, 5]})
 	    .use(mdit.githubAlerts)
         .render(markdown)
   })
