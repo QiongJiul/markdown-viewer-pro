@@ -22,7 +22,9 @@ md.compilers['markdown-it'] = (() => {
     sup: false,
     tasklists: true,
 	mtoc: true,
-	githubAlerts:true
+	githubAlerts: true,
+	figures: true,
+	spoiler: true
   }
 
   var description = {
@@ -43,7 +45,9 @@ md.compilers['markdown-it'] = (() => {
     sup: 'Superscript <sup>\n^text^',
     tasklists: 'Task lists\n- [x]\n- [ ]',
 	mtoc: 'Add a table of contents to the document\n [toc]',
-	githubAlerts: 'github Alerts'
+	githubAlerts: 'Support GitHub-style alerts for markdown-it.',
+	figures: 'Render images occurring by itself in a paragraph as , similar to pandoc\'s implicit figures.\n<figure><img ...></figure>',
+	spoiler: 'Plugins to hide content.\n !!text!!'
   }
 
   var ctor = ({storage: {state}}) => ({
@@ -66,6 +70,8 @@ md.compilers['markdown-it'] = (() => {
         .use(state['markdown-it'].tasklists ? mdit.tasklists : () => {})
 	    .use(state['markdown-it'].mtoc ? mdit.mtoc : () => {}, {markerPattern: /^\[toc\]/im, includeLevel: [1, 2, 3, 4, 5]})
 	    .use(state['markdown-it'].githubAlerts ? mdit.githubAlerts : () => {})
+		.use(state['markdown-it'].figures ? mdit.figures : () => {})
+	    .use(state['markdown-it'].spoiler ? mdit.spoiler : () => {})
         .render(markdown)
   })
 

@@ -44,13 +44,13 @@ md.storage.defaults = (compilers) => {
     raw: false,
     match,
     themes: {
-      width: 'auto',
+      width: 'large',
     },
     content: {
-      autoreload: false,
+      autoreload: true,
       emoji: false,
-      mathjax: false,
-      mermaid: false,
+      mathjax: true,
+      mermaid: true,
       syntax: true,
       toc: false,
     },

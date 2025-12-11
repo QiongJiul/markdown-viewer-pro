@@ -506,14 +506,44 @@ html {
 .markdown-body img[align="left"] {
 	padding-right: 20px;
 }
-/* .markdown-body img[align="center"] { */
-/*     display: block; */
-/*     margin-left: auto; */
-/*     margin-right: auto; */
-/* } */
+.markdown-body figure img[align="center"] {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+.markdown-body img[align="center"] ~ figcaption {
+	text-align: center;
+	color: #656d76;
+	font-size: .92em;
+	margin-top: 5px;
+}
+.markdown-body figure {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    unicode-bidi: isolate;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
 .markdown-body .emoji {
 	max-width: none;
 	vertical-align: text-top;
+}
+.markdown-body span.spoiler {
+	padding-left: 2px;
+	padding-right: 2px;
+	background-color: currentColor;
+	border-radius: .2em;
+	user-select: none;
+	cursor: help;
+	transition: background ease .5s;
+}
+.markdown-body span.spoiler:hover {
+	background-color: hsl(from currentColor calc(h + 180) s calc(100 - l));
+	border-radius: .2em;
+	user-select: auto;
 }
 .markdown-body span.frame {
 	display: block;

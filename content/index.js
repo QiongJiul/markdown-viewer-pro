@@ -136,11 +136,10 @@ var render = (md) => {
 		m.redraw()
 		
 
-		preCodeType();
 		let docMainNew = getPresentDoc();
 		let docInfo = docDiff(docMainOld, docMainNew);
 		setTimeout(() => {
-			preCodeType();
+			styleInit();
 			if (docInfo)
 				scrollTo({ top: docInfo, left: 0, behavior: "smooth" });
 		}, 50);
@@ -150,10 +149,18 @@ var render = (md) => {
 
 var docMainOld = false;
 
-function preCodeType() {
+function styleInit() {
 	let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
+	const eFigure = document.querySelectorAll(".markdown-body figure:has(img[align=\"center\"])");
+	for (let i = 0;  i < eFigure.length; i ++){
+		const element = eFigure[i];
+		let tempFigcaption = document.createElement("figcaption");
+		tempFigcaption.innerText = element.children[0].alt;
+		element.appendChild(tempFigcaption);
+	}
 	for (let i = 0; i < pre.length; i++) {
-		pre[i].children[0].setAttribute('data-language', pre[i].className.split('-')[1]);
+		const element = pre[i];
+		element.children[0].setAttribute('data-language', element.className.split('-')[1]);
 	}
 }
 function  getPresentDoc() {
