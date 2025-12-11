@@ -85,11 +85,11 @@ var scroll = (() => {
       return
     }
     try {
-      container.scrollTop = parseInt(localStorage.getItem(key))
+		scrollTo({ top: parseInt(localStorage.getItem(key)), left: 0, behavior: "instant" });
     }
     catch (err) {
       chrome.storage.local.get(key, (res) => {
-        container.scrollTop = parseInt(res[key])
+		  scrollTo({ top: parseInt(res[key]), left: 0, behavior: "instant" });
       })
     }
   }
@@ -108,10 +108,14 @@ var scroll = (() => {
   return (update) => {
     if ($('#_toc') && state.raw) $('#_toc').style.visibility = 'hidden'
     onload(() => {
-      var container = ((html = $('html')) => (
-        html.scrollTop = 1,
-        html.scrollTop ? (html.scrollTop = 0, html) : $('body')
-      ))()
+		var container = ((html = $('html')) => {    
+			html.scrollTo({ top: 1, left: 0, behavior: "instant" });
+			if (html.scrollTop)  {
+				html.scrollTo({ top: 1, left: 0, behavior: "instant" });
+				return html;
+			}
+			return $('body');
+		})()
 
 		if (!update && location.hash && document.getElementById(location.hash.slice(1))) {
 			get(container, 'md-', document.getElementById(location.hash.slice(1)).offsetTop)

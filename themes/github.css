@@ -1,5 +1,5 @@
 html {
-   /* scroll-behavior: smooth; */
+   scroll-behavior: smooth;
 }
 .markdown-body {
 	-ms-text-size-adjust: 100%;
@@ -506,6 +506,11 @@ html {
 .markdown-body img[align="left"] {
 	padding-right: 20px;
 }
+/* .markdown-body img[align="center"] { */
+/*     display: block; */
+/*     margin-left: auto; */
+/*     margin-right: auto; */
+/* } */
 .markdown-body .emoji {
 	max-width: none;
 	vertical-align: text-top;

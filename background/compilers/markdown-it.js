@@ -12,15 +12,15 @@ md.compilers['markdown-it'] = (() => {
     quotes: '“”‘’',
     // plugins
     abbr: false,
-    attrs: false,
+    attrs: true,
     cjk: false,
-    deflist: false,
-    footnote: false,
-    ins: false,
-    mark: false,
+    deflist: true,
+    footnote: true,
+    ins: true,
+    mark: true,
     sub: false,
     sup: false,
-    tasklists: false,
+    tasklists: true,
 	mtoc: true,
 	githubAlerts:true
   }
@@ -42,7 +42,7 @@ md.compilers['markdown-it'] = (() => {
     sub: 'Subscript <sub>\n~text~',
     sup: 'Superscript <sup>\n^text^',
     tasklists: 'Task lists\n- [x]\n- [ ]',
-	mtoc: 'Add a table of contents to the document\n [[toc]]',
+	mtoc: 'Add a table of contents to the document\n [toc]',
 	githubAlerts: 'github Alerts'
   }
 
@@ -64,8 +64,8 @@ md.compilers['markdown-it'] = (() => {
         .use(state['markdown-it'].sub ? mdit.sub : () => {})
         .use(state['markdown-it'].sup ? mdit.sup : () => {})
         .use(state['markdown-it'].tasklists ? mdit.tasklists : () => {})
-	    .use(mdit.mtoc, {markerPattern: /^\[toc\]/im, includeLevel: [1, 2, 3, 4, 5]})
-	    .use(mdit.githubAlerts)
+	    .use(state['markdown-it'].mtoc ? mdit.mtoc : () => {}, {markerPattern: /^\[toc\]/im, includeLevel: [1, 2, 3, 4, 5]})
+	    .use(state['markdown-it'].githubAlerts ? mdit.githubAlerts : () => {})
         .render(markdown)
   })
 
