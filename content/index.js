@@ -135,32 +135,228 @@ var render = (md) => {
 		state.html = anchors(state.html)
 		m.redraw()
 		
-
-		let docMainNew = getPresentDoc();
-		let docInfo = docDiff(docMainOld, docMainNew);
-		setTimeout(() => {
-			styleInit();
-			if (docInfo)
-				scrollTo({ top: docInfo, left: 0, behavior: "smooth" });
-		}, 50);
-		docMainOld = htmlToDocumentFragment(state.html).children;
+		autoroll();
 	})
 }
 
 var docMainOld = false;
 
+function autoroll() {
+	const DISTANCE_TOP_PERCENT = 15;
+	const distance = (DISTANCE_TOP_PERCENT * window.innerHeight) / 100;
+
+
+	function main_autoroll() {
+		if (docMainOld !== false && state.content.autoroll === true) {
+			const docDiffInfo = docNodeDiff(docMainOld, getPresentDoc(), elementToDescriptor);
+			if (docDiffInfo === false) return;
+			if (docDiffInfo.head === null) return;
+
+			scrollTo({top: docDiffInfo.head.top - distance, left: 0, behavior: "smooth", duration: 1000});
+
+			((info) => setTimeout(() => {
+				console.log(info);
+				for (let i = 0; i < info.added.length; i++) {
+					const data = info.added[i];
+					randeReminder(data[0].top, data[1].top - data[0].top + data[1].height , "#34c155");
+				}
+				for (let i = 0; i < info.removed.length; i++) {
+					const data = info.removed[i];
+					randeReminder((data[1].top + data[0].top) / 2, 4, "#a1423d");
+				}
+			}, Math.abs(docDiffInfo.head.y - distance) / 1000))(docDiffInfo);
+
+		}
+		docMainOld = getPresentDoc().cloneNode(true);
+	}
+
+	setTimeout(() => {
+		styleInit();
+		 setTimeout(main_autoroll, docMainOld === false ? 100 : 50);
+	}, 50);
+}
+
+ /**
+ * 渲染提示窗口
+ * @param {Number} top 
+ * @param {Number} height 
+ * @param {String} color 
+ */
+function randeReminder(top, height, color, clear = false) {
+	const transitionS = 0.5
+	const lengthExpansionPX = 20;
+	let reminderWin = document.querySelector(".reminder-list");
+	if (clear && reminderWin !== null) {
+		document.querySelector(".reminder-list").remove();
+		return;
+	}
+	const markdownBodyInfo = document.getElementById("_html").getBoundingClientRect();
+	let divE = document.createElement("div");
+	divE.className = "reminder-win";
+	divE.style.top = top + "px";
+	divE.style.height = height + "px";
+	divE.style.left = markdownBodyInfo.left - lengthExpansionPX + "px";
+	divE.style.right = markdownBodyInfo.right - markdownBodyInfo.width - lengthExpansionPX + "px";
+	divE.style.backgroundColor = color;
+	if (reminderWin === null) {
+		reminderWin = document.createElement("div");
+		reminderWin.className = "reminder-list";
+		document.body.appendChild(reminderWin);
+		let styleE = document.createElement("style");
+		styleE.type = "text/css";
+		styleE.textContent = `.reminder-win { position: absolute; pointer-events: none; transition: ${transitionS}s; opacity: 0; }`
+		reminderWin.appendChild(styleE);
+	}
+	reminderWin.appendChild(divE);
+	((element) => setTimeout(() => {
+		element.style.opacity = ".7";
+		((element) => setTimeout(() => {
+			element.style.opacity = "0";
+		}, transitionS * 1000))(element);
+		((element) => setTimeout(() => {
+			element.remove();
+		}, transitionS * 2000))(element);
+	}, 5))(divE);
+}
+
+function elementToDescriptor(/**@type {HTMLElement}*/ element) {
+	if (element.nodeType === 3 || element.nodeName === "BR") element = element.parentNode;
+	if (element.closest(".footnote-item") !== null)
+		element = document.getElementById(
+			element
+			.closest(".footnote-item")
+			.querySelector("a.footnote-backref")
+			.getAttribute("href")
+			.slice(1)
+		).parentNode.parentNode;
+	let element_data = element.getBoundingClientRect();
+	// console.log(element);
+	return {
+		top: element_data.y + window.scrollY,
+		height: element_data.height,
+		y: element_data.y
+	};
+}
+
+ /**
+ * DOM差异
+ * @param {HTMLElement} docNode_old 
+ * @param {HTMLElement} docNode_new 
+ * @param {Function} dispose 
+ */
+function docNodeDiff(docNode_old, docNode_new, dispose) {
+	if (!docNode_old || !docNode_new) return false;
+	let treeWalker_old = traversalNodeTreeWalkerAPI(docNode_old);
+	let treeWalker_new = traversalNodeTreeWalkerAPI(docNode_new);
+	/** @type {{ head: ReturnType <typeof elementToDescriptor>, added: ReturnType <typeof elementToDescriptor>[][], removed: ReturnType <typeof elementToDescriptor>[][], type: String} */
+	let result = { head: null, added: [], removed: [], type: ''} 
+	let Count = 0;
+	let status = {
+		Count: false,
+		diffElement: false,
+		resultHead: false,
+		resultTyep: false,
+	};
+ 	let /**@type {HTMLElement}*/ diffElement_old, /**@type {HTMLElement}*/ diffElement_new;
+	const reset = function (type) {
+		if (!status.resultTyep) result.type = type;
+		status.diffElement = false;
+		status.resultTyep = true;
+		Count = 0;
+	}
+	while (treeWalker_old.nextNode() && treeWalker_new.nextNode()) {
+		if (!status.diffElement) {
+			if (!isElementSame(treeWalker_old.currentNode, treeWalker_new.currentNode)) {
+				diffElement_old = treeWalker_old.currentNode;
+				diffElement_new = treeWalker_new.currentNode;
+				status.diffElement = true;
+
+				if (!status.resultHead) {
+					result.head = dispose(diffElement_new);
+					status.resultHead = true;
+				}
+			}
+		} else {
+			Count ++;
+			if (isElementSame(diffElement_old, treeWalker_new.currentNode)) {
+				treeWalker_new.previousNode();
+				result.added.push([dispose(diffElement_new), dispose(treeWalker_new.currentNode)]);
+				treeWalker_new.nextNode();
+				for (let i = 0; i < Count; i ++) treeWalker_old.previousNode(); 
+				// if (!status.resultTyep) result.type = 'added';
+				reset("added");
+			} else if (isElementSame(diffElement_new, treeWalker_old.currentNode)) {
+				for (let i = 0; i < Count + 1; i ++) treeWalker_new.previousNode(); 
+				result.removed.push([dispose(treeWalker_new.currentNode), dispose(diffElement_new)]);
+				treeWalker_new.nextNode();
+				// if (!status.resultTyep) result.type = 'removed';
+				reset("removed");
+			}
+		}
+		if (Count >= 32)  {
+			if (!status.resultHead) result.head = dispose(diffElement_new);
+			if (!status.resultTyep) result.type = 'head';
+			return result;
+		}
+		if (status.resultHead) if (elementToDescriptor(treeWalker_new.currentNode).top > (result.head.top + window.innerHeight)) break;
+
+	}
+	return result;
+}
+function isElementSame(/**@type {HTMLElement}*/ e_one, /**@type {HTMLElement}*/ e_two) {
+	if (e_one.nodeName === "MJX-MATH")
+		if (e_one.outerHTML === e_two.outerHTML) {
+			return true;
+		} else {
+			return false;
+		}
+	if (e_one.textContent !== '') 
+		if (e_one.textContent === e_two.textContent) {
+			return true;
+		} else {
+			return false;
+		}
+	if (e_one.outerHTML === e_two.outerHTML) return true;
+	return false
+}
+function traversalNodeTreeWalkerAPI(/**@type {HTMLElement}*/ node) {
+	return document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, filterTreeWalker, false);
+}
+function filterTreeWalker(/**@type {HTMLElement}*/ node) {
+	const classNameBlackList = ["table-of-contents"];
+	const nodeNameBlackList = ["line", "style", "path", "MJX-ASSISTIVE-MML"];
+	const nodeParentNameBlackList = ["MJX-MATH"];
+	const nodeNameWhiteList = ["BR", "MJX-MATH"];
+	if (nodeNameWhiteList.indexOf(node.nodeName) !== -1) return NodeFilter.FILTER_ACCEPT;
+	//拒绝其和其下所有节点
+	if (
+		classNameBlackList.indexOf(node.className) !== -1 ||
+		nodeNameBlackList.indexOf(node.nodeName) !== -1 ||
+		nodeParentNameBlackList.indexOf(node.parentNode.nodeName) !== -1
+	) return NodeFilter.FILTER_REJECT;
+	//跳过当前节点但是接受子节点
+	if (
+		!(node.childElementCount === 0 || node.childElementCount === undefined) ||
+		(node.childElementCount === 0 && node.textContent !== "") ||
+		node.textContent === "\n" 
+	) return NodeFilter.FILTER_SKIP;
+
+	return NodeFilter.FILTER_ACCEPT;
+}
 function styleInit() {
 	let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
-	const eFigure = document.querySelectorAll(".markdown-body figure:has(img[align=\"center\"])");
-	for (let i = 0;  i < eFigure.length; i ++){
-		const element = eFigure[i];
-		let tempFigcaption = document.createElement("figcaption");
-		tempFigcaption.innerText = element.children[0].alt;
-		element.appendChild(tempFigcaption);
-	}
 	for (let i = 0; i < pre.length; i++) {
 		const element = pre[i];
 		element.children[0].setAttribute('data-language', element.className.split('-')[1]);
+	}
+	const eFigure = document.querySelectorAll(".markdown-body figure:has(img[align=\"center\"])");
+	for (let i = 0;  i < eFigure.length; i ++){
+		const element = eFigure[i];
+		if (element.childElementCount === 1) {
+			let tempFigcaption = document.createElement("figcaption");
+			tempFigcaption.innerText = element.children[0].alt;
+			element.appendChild(tempFigcaption);
+		}
 	}
 }
 function  getPresentDoc() {
@@ -168,21 +364,21 @@ function  getPresentDoc() {
 	if (doc === null) {
 		return false;
 	}
-	return doc.children;
+	return doc;
 }
-function docDiff(docOldd, docNew) {
-	if (!docOldd || !docNew) return false;
-	let docLength = docOldd.length > docNew.length ? docOldd.length : docNew.length;
-	for (let i = 0; i < docLength; i++) {
-		if (docNew[i] === undefined || docOldd[i] === undefined) {
-			return docNew[i - 1].offsetTop;
-		}
-		if (docOldd[i].outerHTML != docNew[i].outerHTML) {
-			return docNew[i].offsetTop;
-		}
-	}
-	return false;
-}
+// function docDiff(docOldd, docNew) {
+//     if (!docOldd || !docNew) return false;
+//     let docLength = docOldd.length > docNew.length ? docOldd.length : docNew.length;
+//     for (let i = 0; i < docLength; i++) {
+//         if (docNew[i] === undefined || docOldd[i] === undefined) {
+//             return docNew[i - 1].offsetTop;
+//         }
+//         if (docOldd[i].outerHTML != docNew[i].outerHTML) {
+//             return docNew[i].offsetTop;
+//         }
+//     }
+//     return false;
+// }
 function htmlToDocumentFragment(htmlString) {
   const range = document.createRange();
   range.selectNode(document.body);
@@ -248,7 +444,8 @@ function mount () {
 
         if (state.content.toc) {
           dom.push(m('#_toc.tex2jax-ignore', m.trust(state.toc)))
-          state.raw ? $('body').classList.remove('_toc-left') : $('body').classList.add('_toc-left')
+		  // 目录toc body左侧padding
+          // state.raw ? $('body').classList.remove('_toc-left') : $('body').classList.add('_toc-left')
         }
 
         if (state.theme === 'custom') {
