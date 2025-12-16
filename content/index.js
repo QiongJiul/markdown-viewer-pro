@@ -141,11 +141,17 @@ var render = (md) => {
 
 var docMainOld = false;
 
+ /**
+ * 自动滚动到变化内容
+ */
 function autoroll() {
-	const DISTANCE_TOP_PERCENT = 15;
-	const distance = (DISTANCE_TOP_PERCENT * window.innerHeight) / 100;
+	const DISTANCE_TOP_PERCENT = 15; // 距离窗口顶部%
+	const distance = (DISTANCE_TOP_PERCENT * window.innerHeight) / 100; 
 
 
+	 /**
+	 * 主要滚动函数
+	 */
 	function main_autoroll() {
 		if (docMainOld !== false && state.content.autoroll === true) {
 			const docDiffInfo = docNodeDiff(docMainOld, getPresentDoc(), elementToDescriptor);
@@ -219,7 +225,11 @@ function randeReminder(top, height, color, clear = false) {
 	}, 5))(divE);
 }
 
-function elementToDescriptor(/**@type {HTMLElement}*/ element) {
+ /**
+ * 元素转换到位置描述信息
+ * @param {HTMLElement} element 
+ */
+function elementToDescriptor(element) {
 	if (element.nodeType === 3 || element.nodeName === "BR") element = element.parentNode;
 	if (element.closest(".footnote-item") !== null)
 		element = document.getElementById(
@@ -248,8 +258,8 @@ function docNodeDiff(docNode_old, docNode_new, dispose) {
 	if (!docNode_old || !docNode_new) return false;
 	let treeWalker_old = traversalNodeTreeWalkerAPI(docNode_old);
 	let treeWalker_new = traversalNodeTreeWalkerAPI(docNode_new);
-	/** @type {{ head: ReturnType <typeof elementToDescriptor>, added: ReturnType <typeof elementToDescriptor>[][], removed: ReturnType <typeof elementToDescriptor>[][], type: String} */
-	let result = { head: null, added: [], removed: [], type: ''} 
+	/** @type {{ head: ReturnType <typeof elementToDescriptor>, added: ReturnType <typeof elementToDescriptor>[][], removed: ReturnType <typeof elementToDescriptor>[][]} */
+	let result = { head: null, added: [], removed: []};
 	let Count = 0;
 	let status = {
 		Count: false,
@@ -258,8 +268,7 @@ function docNodeDiff(docNode_old, docNode_new, dispose) {
 		resultTyep: false,
 	};
  	let /**@type {HTMLElement}*/ diffElement_old, /**@type {HTMLElement}*/ diffElement_new;
-	const reset = function (type) {
-		if (!status.resultTyep) result.type = type;
+	const reset = function () {
 		status.diffElement = false;
 		status.resultTyep = true;
 		Count = 0;
@@ -283,19 +292,16 @@ function docNodeDiff(docNode_old, docNode_new, dispose) {
 				result.added.push([dispose(diffElement_new), dispose(treeWalker_new.currentNode)]);
 				treeWalker_new.nextNode();
 				for (let i = 0; i < Count; i ++) treeWalker_old.previousNode(); 
-				// if (!status.resultTyep) result.type = 'added';
 				reset("added");
 			} else if (isElementSame(diffElement_new, treeWalker_old.currentNode)) {
 				for (let i = 0; i < Count + 1; i ++) treeWalker_new.previousNode(); 
 				result.removed.push([dispose(treeWalker_new.currentNode), dispose(diffElement_new)]);
 				treeWalker_new.nextNode();
-				// if (!status.resultTyep) result.type = 'removed';
 				reset("removed");
 			}
 		}
 		if (Count >= 32)  {
 			if (!status.resultHead) result.head = dispose(diffElement_new);
-			if (!status.resultTyep) result.type = 'head';
 			return result;
 		}
 		if (status.resultHead) if (elementToDescriptor(treeWalker_new.currentNode).top > (result.head.top + window.innerHeight)) break;
@@ -303,7 +309,13 @@ function docNodeDiff(docNode_old, docNode_new, dispose) {
 	}
 	return result;
 }
-function isElementSame(/**@type {HTMLElement}*/ e_one, /**@type {HTMLElement}*/ e_two) {
+
+ /**
+ * 判断两个元素是否"相同"
+ * @param {HTMLElement} e_one 
+ * @param {HTMLElement} e_two 
+ */
+function isElementSame(e_one, e_two) {
 	if (e_one.nodeName === "MJX-MATH")
 		if (e_one.outerHTML === e_two.outerHTML) {
 			return true;
@@ -319,9 +331,19 @@ function isElementSame(/**@type {HTMLElement}*/ e_one, /**@type {HTMLElement}*/ 
 	if (e_one.outerHTML === e_two.outerHTML) return true;
 	return false
 }
-function traversalNodeTreeWalkerAPI(/**@type {HTMLElement}*/ node) {
+
+ /**
+ * 获取TreeWalker对象
+ * @param {HTMLElement} node 
+ */
+function traversalNodeTreeWalkerAPI(node) {
 	return document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, filterTreeWalker, false);
 }
+
+ /**
+ * TreeWalker 筛选函数
+ * @param {HTMLElement} node 
+ */
 function filterTreeWalker(/**@type {HTMLElement}*/ node) {
 	const classNameBlackList = ["table-of-contents"];
 	const nodeNameBlackList = ["line", "style", "path", "MJX-ASSISTIVE-MML"];
@@ -343,6 +365,10 @@ function filterTreeWalker(/**@type {HTMLElement}*/ node) {
 
 	return NodeFilter.FILTER_ACCEPT;
 }
+
+ /**
+ * 样式初始化
+ */
 function styleInit() {
 	let pre = document.querySelectorAll(".markdown-body pre[class*=\"language-\"]");
 	for (let i = 0; i < pre.length; i++) {
@@ -359,6 +385,10 @@ function styleInit() {
 		}
 	}
 }
+
+ /**
+ * 获取当前DOM结构
+ */
 function  getPresentDoc() {
 	let doc = document.getElementById("_html");
 	if (doc === null) {
@@ -366,19 +396,11 @@ function  getPresentDoc() {
 	}
 	return doc;
 }
-// function docDiff(docOldd, docNew) {
-//     if (!docOldd || !docNew) return false;
-//     let docLength = docOldd.length > docNew.length ? docOldd.length : docNew.length;
-//     for (let i = 0; i < docLength; i++) {
-//         if (docNew[i] === undefined || docOldd[i] === undefined) {
-//             return docNew[i - 1].offsetTop;
-//         }
-//         if (docOldd[i].outerHTML != docNew[i].outerHTML) {
-//             return docNew[i].offsetTop;
-//         }
-//     }
-//     return false;
-// }
+
+ /**
+ * html字符串转换dom
+ * @param {String} htmlString 
+ */
 function htmlToDocumentFragment(htmlString) {
   const range = document.createRange();
   range.selectNode(document.body);
