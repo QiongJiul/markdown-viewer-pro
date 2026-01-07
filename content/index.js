@@ -129,12 +129,22 @@ var render = (md) => {
 				'<code class="mermaid">'
 			)
 		}
-		if (state.content.toc) {
-			state.toc = toc.render(state.html)
-		}
 		state.html = anchors(state.html)
 		m.redraw()
 		
+		if (state.content.toc) {
+			setTimeout(() => {
+				document.body.classList.add("_toc-right");
+
+				let elementDIV = document.createElement("div");
+				elementDIV.id = "toctest";
+				elementDIV.appendChild(tocDom(tocPrep()));
+				document.body.appendChild(elementDIV);
+
+				document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(element => observer.observe(element));
+			}, 40);
+		}
+
 		autoroll();
 	})
 }
@@ -465,7 +475,7 @@ function mount () {
         }
 
         if (state.content.toc) {
-          dom.push(m('#_toc.tex2jax-ignore', m.trust(state.toc)))
+          // dom.push(m('#_toc.tex2jax-ignore', m.trust(state.toc)))
 		  // 目录toc body左侧padding
           // state.raw ? $('body').classList.remove('_toc-left') : $('body').classList.add('_toc-left')
         }
@@ -505,6 +515,131 @@ var toc = (() => {
       , '')
   }
 })()
+
+
+function tocPrep() {
+	let elementHead = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	let result = [];
+	for (let i = 0; i < elementHead.length; i++) {
+		const element = elementHead[i];
+		const key = Math.random().toString(16).slice(2);
+		element.setAttribute("data-key", key);
+		result.push({
+			level: element.nodeName[1] * 1,
+			id: element.id,
+			dataKey: key,
+			title: element.childNodes[1].textContent
+		})
+	}
+	return result;
+}
+ /**
+ *
+ * @param {ReturnType <typeof tocPrep>} headArr 
+ * @param {Number} index 
+ * @param {Number} prevLevel 
+ * @returns {HTMLUListElement}
+ */
+function tocDom(headArr, index = 0, prevLevel = 1) {
+	let result = document.createElement("ul");
+	let i = 0;
+	for (i = index; i < headArr.length; i++) {
+		const element = headArr[i];
+		let level = element.level;
+		if (level > prevLevel) {
+			const info = tocDom(headArr, i, prevLevel + 1);
+			if (i !== 0 && headArr[i - 1].level === prevLevel) result.lastElementChild.appendChild(info[0])
+				else result.appendChild(info[0]);
+			i = info[1];
+		} else if (level === prevLevel) {
+			let elementLI = document.createElement("li");
+			let elementA = document.createElement("a");
+			elementA.textContent = element.title;
+			elementA.href = '#' + element.id;
+			elementA.id = element.dataKey;
+			elementLI.appendChild(elementA);
+			result.appendChild(elementLI);
+		} else if (level < prevLevel) {
+			return [result, i - 1]
+		} 
+	}
+	if (prevLevel !== 1) {
+		return [result, i - 1];
+	} else {
+		return result;
+	}
+} 
+
+let timerout = null;
+const observer = new IntersectionObserver((entries) => {
+	entries.forEach((entry) => {
+		if (entry.isIntersecting) {
+			const tocopenClass = "_toc-open";
+			const toccurrClass = "_toc-current";
+			const rootTocId = "toctest";
+			const key = entry.target.getAttribute("data-key");
+			// let currentTitlelement = document.querySelector("#toctest > .currentTitle");
+			let rootTocElement = document.getElementById(rootTocId);
+			let tocelement = document.getElementById(key);
+			let tocelementSibling = tocelement.nextElementSibling;
+			// const tocelementInfo = tocelement.getBoundingClientRect();
+			rootTocElement.querySelectorAll(`#${rootTocId} > ul ul.${tocopenClass}`)
+				.forEach(element => element.classList.remove(tocopenClass));
+			rootTocElement.querySelectorAll(`#${rootTocId} .${toccurrClass}`)
+				.forEach(element => element.classList.remove(toccurrClass));
+			getAncestorAll(tocelement, "ul", rootTocElement.querySelector(`#${rootTocId} > ul`))
+				.forEach(element => element.classList.add(tocopenClass));
+			tocelement.classList.add(toccurrClass);
+
+			if (tocelementSibling !== null) tocelementSibling.classList.add(tocopenClass);
+		}
+	})
+}, {
+  root: null,
+  rootMargin: "1px 0% -90% 0%",
+  scrollMargin: "0px",
+  threshold: 1.0,
+});
+
+ /**
+ *
+ * @param {HTMLElement} element 起始元素
+ * @param {selector} selector 目标选择器 
+ * @param {HTMLElement} endElement 终止元素
+ * @param {Bool} bool 是否包含终止元素
+ * @returns {HTMLElement[]} 
+ */
+function getAncestorAll(element, selector, endElement, bool = true) {
+	const closest = element.parentNode.closest(selector);
+	return closest.isEqualNode(endElement) ? (bool ? [closest]: []) : [closest].concat(getAncestorAll(closest, selector, endElement))
+}
+
+
+
+// const colorp = [
+//     ["#A8C9D9", "淡蓝色", "color-blue-3"],
+//     ["#B8E0A5", "浅绿色", "color-green-3"],
+//     ["#F1E37C", "柠檬黄", "color-yellow-3"],
+//     ["#F4A1C1", "温暖粉色", "color-pink-3"],
+//     ["#fb7575", "亮红色", "color-red-3"],
+//     ["#E9714C", "珊瑚色", "color-orange-5"],
+//     ["#9E7BB6", "薰衣草蓝", "color-purple-4"],
+//     ["#D1D3D4", "云雾灰", "color-gray-2"],
+//     ["#5A9A9B", "深海绿色", "color-teal-6"],
+//     ["#D1B89E", "沙色", "color-brown-3"],
+//     ["#FBAB99", "浅橙色", "color-roange-3"],
+//     ["#B3B4D6", "淡紫色", "color-purple-2"],
+//     ["#7FCEB8", "草地绿", "color-teal-3"],
+//     ["#D6A18D", "淡红棕色", "color-brown-2"],
+//     ["#D0E0F1", "水蓝色", "color-blue-1"],
+//     ["#AC896D", "瓷土色", "color-brown-4"],
+// ];
+// colorp.forEach(e => {
+//     let ediv = document.createElement("div");
+//     ediv.style.backgroundColor = e[0];
+//     ediv.textContent = e[0] + ' ' + e[1];
+//     elementDIV.appendChild(ediv);
+// })
 
 var frontmatter = (md) => {
   if (/^-{3}[\s\S]+?-{3}/.test(md)) {

@@ -125,14 +125,16 @@ var scroll = (() => {
 		}
 
 		if (state.content.toc) {
-			setTimeout(() => get($('#_toc'), 'md-toc-'), 10)
+			// setTimeout(() => get($('#_toc'), 'md-toc-'), 10)
+			setTimeout(_ => {}, 10)
 		}
 
       if (!listening) {
         listening = true
 		set(container, 'md-')
 		if (state.content.toc) {
-		  setTimeout(() => set($('#_toc'), 'md-toc-'), 10)
+		  // setTimeout(() => set($('#_toc'), 'md-toc-'), 10)
+		  setTimeout(_ => {}, 10)
 		}
       }
 
